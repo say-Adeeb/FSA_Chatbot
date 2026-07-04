@@ -1,0 +1,42 @@
+Course: Data Science
+Section: Curriculum Overview
+Topics Covered:
+- Introduction to Data Science
+- Data Collection and Cleaning
+- Exploratory Data Analysis
+- Statistics (mean, median, mode, variance, standard deviation)
+- Machine Learning Algorithms (regression, classification, clustering)
+- Model Evaluation and Validation
+- Data Visualization (matplotlib, seaborn)
+- Real-world Projects
+
+Course: Data Science
+Section: Machine Learning Modules
+Topics Covered:
+- Supervised Learning: Linear Regression, Logistic Regression, Decision Trees
+- Unsupervised Learning: K-Means Clustering, PCA
+- Model Selection and Cross-Validation
+- Overfitting and Regularization
+
+Course: Data Science
+Section: Tools and Technologies
+Topics Covered:
+- Python Programming for Data Science
+- Pandas, NumPy, Scikit-learn
+- Data Visualization with Matplotlib and Seaborn
+- Jupyter Notebooks
+
+Course: Artificial Intelligence
+Section: Curriculum Overview
+Topics Covered:
+- Introduction to Artificial Intelligence
+- History and Applications of AI
+- Search Algorithms (BFS, DFS, A*)
+- Knowledge Representation
+- Reasoning and Inference
+- Machine Learning Basics
+- Neural Networks and Deep Learning
+- Natural Language Processing
+- Computer Vision
+- AI Ethics and Societal Impact
+- Real-world AI Projects

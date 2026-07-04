@@ -1,0 +1,24 @@
+# Secrets
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# Test / cache
+.pytest_cache/
+.mypy_cache/
+
+# Evaluation run artifacts (timestamped, regenerated each run)
+evaluation/results/*.json

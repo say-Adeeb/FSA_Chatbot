@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Full Stack Academy - Chat Widget Demo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  :root {
+    --brand: #4f46e5;
+    --brand-dark: #4338ca;
+    --bg: #f3f4f6;
+    --bubble-user: #4f46e5;
+    --bubble-bot: #ffffff;
+    --text-dark: #1f2937;
+    --text-light: #6b7280;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    position: relative;
+  }
+
+  .page-content {
+    max-width: 720px;
+    margin: 60px auto;
+    padding: 0 24px;
+    color: var(--text-dark);
+  }
+
+  .page-content h1 { font-size: 28px; margin-bottom: 8px; }
+  .page-content p { color: var(--text-light); line-height: 1.6; }
+
+  /* ---- Floating launcher button ---- */
+  #fsa-launcher {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--brand);
+    box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    z-index: 1000;
+  }
+  #fsa-launcher:hover { transform: scale(1.08); box-shadow: 0 8px 24px rgba(79, 70, 229, 0.5); }
+  #fsa-launcher svg { width: 26px; height: 26px; }
+
+  /* ---- Chat panel ---- */
+  #fsa-panel {
+    position: fixed;
+    bottom: 96px;
+    right: 24px;
+    width: 360px;
+    max-width: calc(100vw - 32px);
+    height: 520px;
+    max-height: calc(100vh - 140px);
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 1000;
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 0.18s ease, transform 0.18s ease;
+  }
+  #fsa-panel.open { display: flex; opacity: 1; transform: translateY(0); }
+
+  #fsa-header {
+    background: linear-gradient(135deg, var(--brand), var(--brand-dark));
+    color: white;
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  #fsa-header .title { font-weight: 600; font-size: 15px; }
+  #fsa-header .subtitle { font-size: 12px; opacity: 0.85; margin-top: 2px; }
+  #fsa-close {
+    background: none; border: none; color: white; cursor: pointer;
+    opacity: 0.85; padding: 4px; display: flex;
+  }
+  #fsa-close:hover { opacity: 1; }
+
+  #fsa-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: #f9fafb;
+  }
+
+  .fsa-msg {
+    max-width: 82%;
+    padding: 10px 13px;
+    border-radius: 14px;
+    font-size: 13.5px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+  .fsa-msg.user {
+    align-self: flex-end;
+    background: var(--bubble-user);
+    color: white;
+    border-bottom-right-radius: 4px;
+  }
+  .fsa-msg.bot {
+    align-self: flex-start;
+    background: var(--bubble-bot);
+    color: var(--text-dark);
+    border: 1px solid #e5e7eb;
+    border-bottom-left-radius: 4px;
+  }
+  .fsa-msg.error {
+    align-self: flex-start;
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+  }
+
+  .fsa-typing {
+    align-self: flex-start;
+    display: flex;
+    gap: 4px;
+    padding: 12px 14px;
+    background: var(--bubble-bot);
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    border-bottom-left-radius: 4px;
+  }
+  .fsa-typing span {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #9ca3af;
+    animation: fsa-bounce 1.2s infinite ease-in-out;
+  }
+  .fsa-typing span:nth-child(2) { animation-delay: 0.15s; }
+  .fsa-typing span:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes fsa-bounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+    30% { transform: translateY(-4px); opacity: 1; }
+  }
+
+  #fsa-input-row {
+    display: flex;
+    gap: 8px;
+    padding: 12px;
+    border-top: 1px solid #e5e7eb;
+    background: white;
+    flex-shrink: 0;
+  }
+  #fsa-input {
+    flex: 1;
+    border: 1px solid #d1d5db;
+    border-radius: 20px;
+    padding: 10px 16px;
+    font-size: 13.5px;
+    outline: none;
+    font-family: inherit;
+  }
+  #fsa-input:focus { border-color: var(--brand); }
+  #fsa-send {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    border: none;
+    background: var(--brand);
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.15s ease;
+  }
+  #fsa-send:hover { background: var(--brand-dark); }
+  #fsa-send:disabled { background: #c7c7f5; cursor: not-allowed; }
+  #fsa-send svg { width: 16px; height: 16px; }
+
+  #fsa-config {
+    font-size: 11px;
+    color: var(--text-light);
+    text-align: center;
+    padding: 6px 12px 10px;
+    background: white;
+  }
+</style>
+</head>
+<body>
+
+  <div class="page-content">
+    <h1>Full Stack Academy</h1>
+    <p>
+      This is a placeholder host page for testing the chatbot widget locally.
+      Click the chat bubble in the bottom-right corner to open the assistant.
+      Make sure the FastAPI backend is running at the API URL configured below
+      (default: <code>http://localhost:8000</code>) before sending a message.
+    </p>
+  </div>
+
+  <!-- Launcher button -->
+  <button id="fsa-launcher" aria-label="Open chat">
+    <svg id="fsa-icon-chat" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+    </svg>
+    <svg id="fsa-icon-close" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+      <line x1="18" y1="6" x2="6" y2="18"></line>
+      <line x1="6" y1="6" x2="18" y2="18"></line>
+    </svg>
+  </button>
+
+  <!-- Chat panel -->
+  <div id="fsa-panel">
+    <div id="fsa-header">
+      <div>
+        <div class="title">Full Stack Academy Assistant</div>
+        <div class="subtitle">Ask about our courses</div>
+      </div>
+    </div>
+
+    <div id="fsa-messages"></div>
+
+    <div id="fsa-input-row">
+      <input id="fsa-input" type="text" placeholder="Ask about a course..." autocomplete="off" />
+      <button id="fsa-send" aria-label="Send message">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+      </button>
+    </div>
+    <div id="fsa-config">API: <span id="fsa-api-url-label"></span></div>
+  </div>
+
+<script>
+(function () {
+  // Change this if the backend runs on a different host/port.
+  const API_URL = "http://localhost:8000/chat/";
+
+  const launcher = document.getElementById("fsa-launcher");
+  const panel = document.getElementById("fsa-panel");
+  const iconChat = document.getElementById("fsa-icon-chat");
+  const iconClose = document.getElementById("fsa-icon-close");
+  const messages = document.getElementById("fsa-messages");
+  const input = document.getElementById("fsa-input");
+  const sendBtn = document.getElementById("fsa-send");
+  document.getElementById("fsa-api-url-label").textContent = API_URL;
+
+  let open = false;
+  let greeted = false;
+  let sessionId = null; // set from the backend's first response, then reused
+
+  function togglePanel() {
+    open = !open;
+    panel.classList.toggle("open", open);
+    iconChat.style.display = open ? "none" : "block";
+    iconClose.style.display = open ? "block" : "none";
+    if (open) {
+      input.focus();
+      if (!greeted) {
+        greeted = true;
+        addMessage("bot", "Hi! Ask me about any Full Stack Academy course (Data Science, Data Analyst, SOC Analyst, Artificial Intelligence, and more).");
+      }
+    }
+  }
+
+  function addMessage(role, text) {
+    const el = document.createElement("div");
+    el.className = "fsa-msg " + role;
+    el.textContent = text;
+    messages.appendChild(el);
+    messages.scrollTop = messages.scrollHeight;
+    return el;
+  }
+
+  function showTyping() {
+    const el = document.createElement("div");
+    el.className = "fsa-typing";
+    el.id = "fsa-typing-indicator";
+    el.innerHTML = "<span></span><span></span><span></span>";
+    messages.appendChild(el);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function hideTyping() {
+    const el = document.getElementById("fsa-typing-indicator");
+    if (el) el.remove();
+  }
+
+  async function sendMessage() {
+    const text = input.value.trim();
+    if (!text) return;
+
+    addMessage("user", text);
+    input.value = "";
+    sendBtn.disabled = true;
+    showTyping();
+
+    try {
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text, session_id: sessionId }),
+      });
+
+      hideTyping();
+
+      if (response.status === 429) {
+        addMessage("error", "You're sending messages too quickly. Please wait a moment and try again.");
+        return;
+      }
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({}));
+        addMessage("error", body.detail || `Request failed (${response.status}).`);
+        return;
+      }
+
+      const data = await response.json();
+      sessionId = data.session_id;
+      addMessage("bot", data.reply);
+    } catch (err) {
+      hideTyping();
+      addMessage("error", "Couldn't reach the chatbot API. Is the backend running at " + API_URL + "?");
+    } finally {
+      sendBtn.disabled = false;
+    }
+  }
+
+  launcher.addEventListener("click", togglePanel);
+  sendBtn.addEventListener("click", sendMessage);
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") sendMessage();
+  });
+})();
+</script>
+
+</body>
+</html>

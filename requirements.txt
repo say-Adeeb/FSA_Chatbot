@@ -1,0 +1,31 @@
+# --- API Backend ---
+fastapi
+uvicorn[standard]
+pydantic
+python-dotenv
+
+# --- Website Scraping ---
+requests
+beautifulsoup4
+lxml
+
+# --- PDF Ingestion ---
+PyMuPDF
+
+# --- Chunking ---
+langchain-text-splitters
+
+# --- Embeddings ---
+sentence-transformers
+
+# --- Retrieval: dense + lexical ---
+faiss-cpu
+rank-bm25
+numpy
+
+# --- LLM ---
+groq
+
+# --- Tests ---
+pytest
+httpx
