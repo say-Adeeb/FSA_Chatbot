@@ -18,16 +18,10 @@ COURSE_ALIASES = [
     (["machine learning", "ml course"], "Machine Learning"),
 ]
 
-# ---------------------------------------------------------------------------
-# Dialogue-act short-circuits. None of these are "questions about the course
-# catalog", so running them through retrieval+generation is guaranteed to
-# fail grounding and burns a Groq call for nothing. Each phrase set is matched
-# against the *entire* normalized message, so a real question that happens to
-# start with one of these words (e.g. "hi, what does the AI course cover?")
-# still goes through full RAG. Each category has multiple reply variants,
-# chosen at random, so the bot doesn't repeat the identical sentence on every
-# turn -- verbatim repetition is a big part of what makes a bot feel robotic.
-# ---------------------------------------------------------------------------
+# Smalltalk short-circuits -- none of this needs retrieval or a Groq call.
+# Matched against the *entire* normalized message, so "hi, what does the AI
+# course cover?" still goes through full RAG. Each category has a few reply
+# variants so it's not the same canned sentence every time.
 
 GREETINGS = {
     "hi", "hii", "hiii", "hey", "heyy", "hello", "helo", "yo",
@@ -101,11 +95,9 @@ def _match_dialogue_act(question: str) -> str | None:
     return None
 
 
-# Non-course FAQ intents: trigger words in the question -> marker substrings to
-# boost in retrieved chunks. This does for general academy FAQs what the course
-# boost already does for courses -- without it, a direct-answer chunk (e.g. the
-# branch address list) can rank behind vaguer marketing prose that happens to
-# share a query word, which makes the LLM under-weight the actual answer.
+# Non-course FAQ intents: trigger words -> marker substrings to boost in
+# retrieved chunks, same idea as the course boost below but for general
+# academy questions (location, contact, fees, duration).
 FAQ_BOOSTS = [
     (["location", "branch", "where is", "centre", "center", "address"],
      ["location", "branch", "road", "floor", "gachibowli", "tolichowki", "ameerpet", "charminar"]),
@@ -133,8 +125,12 @@ def _detect_boost_terms(question: str) -> list[str]:
 
 
 def _looks_like_followup(question: str) -> bool:
+    # Deliberately requires an explicit continuity cue rather than just being
+    # short -- a bare word-count check would wrongly carry the previous course
+    # into any short but unrelated question ("where is the office?" right
+    # after a Data Science question shouldn't stay scoped to Data Science).
     q = question.lower()
-    return any(hint in q for hint in FOLLOWUP_HINTS) or len(question.split()) <= 5
+    return any(hint in q for hint in FOLLOWUP_HINTS)
 
 
 def extract_course_name(question: str) -> str:

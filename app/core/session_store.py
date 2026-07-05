@@ -1,10 +1,7 @@
-"""In-memory conversation session store.
-
-Best-effort only: per-process, not persisted, cleared on restart. Bounds
-memory with LRU eviction so a long-running server can't accumulate unbounded
-sessions or per-session history. Sufficient for tracking short-term context
-(the last detected course, a couple of recent exchanges) without needing an
-external store for a single-instance deployment.
+"""In-memory conversation session store. Per-process and cleared on restart,
+with LRU eviction so it can't grow unbounded. Tracks just enough short-term
+context (last course discussed, a few recent exchanges) for follow-up
+questions -- fine for a single instance, swap for a real store if that changes.
 """
 import threading
 from collections import OrderedDict, deque

@@ -1,9 +1,6 @@
-"""In-memory sliding-window rate limiter.
-
-Best-effort only: per-process, not shared across workers/restarts. Sufficient
-to blunt casual abuse of the paid Groq call behind /chat without adding an
-external dependency (Redis, etc.). If this is ever deployed with multiple
-worker processes, move the counters to a shared store instead.
+"""In-memory sliding-window rate limiter. Per-process, not shared across
+workers -- fine for a single instance, but move to Redis or similar before
+scaling out to multiple processes.
 """
 import threading
 import time

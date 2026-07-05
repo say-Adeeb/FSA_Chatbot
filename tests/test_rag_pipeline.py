@@ -63,6 +63,13 @@ class TestFollowupDetection:
     def test_short_question_is_followup(self):
         assert _looks_like_followup("what about fees?")
 
+    def test_short_unrelated_question_is_not_followup(self):
+        # Regression: word-count alone used to mark ANY short question as a
+        # followup, so "where is the office?" right after a course question
+        # would wrongly stay scoped to that course.
+        assert not _looks_like_followup("where is the office?")
+        assert not _looks_like_followup("how much does it cost?")
+
     def test_long_standalone_question_is_not_followup(self):
         assert not _looks_like_followup(
             "Can you give me a complete breakdown of everything covered in the SOC Analyst program"

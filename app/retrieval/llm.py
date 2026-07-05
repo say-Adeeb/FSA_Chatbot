@@ -46,10 +46,10 @@ def generate_answer(question: str, context_docs: list[str], course: str = "the c
             f"or topic is only associated with a different named course in the context, do not attribute it to {course}."
         )
     else:
-        # No specific course was detected -- this may be a general question about
-        # locations, contact info, admissions, fees, etc. Framing the prompt around
-        # "curriculum for a course" here would make the model refuse to use context
-        # that plainly answers the question just because it isn't a course module.
+        # No course detected -- could be a general question (location, fees,
+        # admissions). Framing this around "curriculum for a course" like the
+        # branch above would make the model refuse context that plainly
+        # answers the question just because it isn't a course module.
         system_message = (
             "You are a precise assistant for Full Stack Academy, an ed-tech training institute. "
             "Answer ONLY using the provided context, which may cover courses offered, branch "

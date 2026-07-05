@@ -10,8 +10,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from app.core.config import settings
-from app.retrieval.llm import generate_answer
-from app.retrieval.rag_pipeline import extract_course_name
+from app.retrieval.llm import default_fallback_message, generate_answer
+from app.retrieval.rag_pipeline import _detect_boost_terms, extract_course_name
 from app.retrieval.vectordb import load_index, search_documents
 from evaluation.golden_dataset import GOLDEN_DATASET
 from evaluation.judge import judge_answer
@@ -32,13 +32,16 @@ def evaluate_item(item: dict, k: int) -> dict:
         else question
     )
     retrieved = search_documents(
-        search_query, k=k, course=detected_course if detected_course != "the course" else None
+        search_query,
+        k=k,
+        course=detected_course if detected_course != "the course" else None,
+        boost_terms=_detect_boost_terms(question),
     )
 
     if retrieved:
         answer = generate_answer(question, retrieved, course=detected_course)
     else:
-        answer = f"I couldn't find detailed curriculum information for {detected_course}."
+        answer = default_fallback_message(detected_course)
 
     result = {
         "id": item["id"],
